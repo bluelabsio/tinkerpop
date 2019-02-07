@@ -55,18 +55,20 @@ class Element(object):
 
 
 class Vertex(Element):
-    def __init__(self, id, label="vertex"):
+    def __init__(self, id, label="vertex", properties={}):
         Element.__init__(self, id, label)
+        self.properties = properties
 
     def __repr__(self):
         return "v[" + str(self.id) + "]"
 
 
 class Edge(Element):
-    def __init__(self, id, outV, label, inV):
+    def __init__(self, id, outV, label, inV, properties={}):
         Element.__init__(self, id, label)
         self.outV = outV
         self.inV = inV
+        self.properties = properties
 
     def __repr__(self):
         return "e[" + str(self.id) + "][" + str(self.outV.id) + "-" + self.label + "->" + str(self.inV.id) + "]"
