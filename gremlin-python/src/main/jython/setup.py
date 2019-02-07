@@ -22,28 +22,6 @@ import sys
 import time
 from setuptools import setup
 
-# Folder containing the setup.py
-root = os.path.dirname(os.path.abspath(__file__))
-
-# Path to __version__ module
-version_file = os.path.join(root, 'gremlin_python', '__version__.py')
-
-# Check if this is a source distribution.
-# If not create the __version__ module containing the version
-if not os.path.exists(os.path.join(root, 'PKG-INFO')):
-    timestamp = int(os.getenv('TIMESTAMP', time.time() * 1000)) / 1000
-    fd = codecs.open(version_file, 'w', 'utf-8')
-    fd.write("'''")
-    fd.write(__doc__)
-    fd.write("'''\n")
-    fd.write('version   = %r\n' % os.getenv('VERSION', '?').replace('-SNAPSHOT', '.dev-%d' % timestamp))
-    fd.write('timestamp = %d\n' % timestamp)
-    fd.close()
-# Load version
-from gremlin_python import __version__
-
-version = __version__.version
-
 install_requires = [
     'aenum>=1.4.5',
     'tornado>=4.4.1,<5.0',
