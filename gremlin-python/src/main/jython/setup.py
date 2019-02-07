@@ -33,7 +33,7 @@ if sys.version_info < (3,2):
 
 setup(
     name='gremlinpython',
-    version=3.3.6,
+    version='3.3.6',
     packages=['gremlin_python', 'gremlin_python.driver',
               'gremlin_python.driver.tornado', 'gremlin_python.process',
               'gremlin_python.structure', 'gremlin_python.structure.io'],
