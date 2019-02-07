@@ -29,7 +29,7 @@ from aenum import Enum
 
 from gremlin_python import statics
 from gremlin_python.statics import FloatType, FunctionType, IntType, LongType, TypeType, DictType, ListType, SetType
-from gremlin_python.process.traversal import Binding, Bytecode, P, TextP, Traversal, Traverser, TraversalStrategy, T
+from gremlin_python.process.traversal import Binding, Bytecode, P, Traversal, Traverser, TraversalStrategy, T
 from gremlin_python.structure.graph import Edge, Property, Vertex, VertexProperty, Path
 
 log = logging.getLogger(__name__)
@@ -141,7 +141,7 @@ class _GraphSONTypeIO(object):
 
     symbolMap = {"global_": "global", "as_": "as", "in_": "in", "and_": "and",
                  "or_": "or", "is_": "is", "not_": "not", "from_": "from",
-                 "set_": "set", "list_": "list", "all_": "all", "with_": "with"}
+                 "set_": "set", "list_": "list", "all_": "all"}
 
     @classmethod
     def unmangleKeyword(cls, symbol):
@@ -286,17 +286,6 @@ class PSerializer(_GraphSONTypeIO):
                "value": [writer.toDict(p.value), writer.toDict(p.other)] if p.other is not None else
                writer.toDict(p.value)}
         return GraphSONUtil.typedValue("P", out)
-
-
-class TextPSerializer(_GraphSONTypeIO):
-    python_type = TextP
-
-    @classmethod
-    def dictify(cls, p, writer):
-        out = {"predicate": p.operator,
-               "value": [writer.toDict(p.value), writer.toDict(p.other)] if p.other is not None else
-               writer.toDict(p.value)}
-        return GraphSONUtil.typedValue("TextP", out)
 
 
 class BindingSerializer(_GraphSONTypeIO):
@@ -483,27 +472,6 @@ class MapType(_GraphSONTypeIO):
         return new_dict
 
 
-class BulkSetIO(_GraphSONTypeIO):
-    graphson_type = "g:BulkSet"
-
-    @classmethod
-    def objectify(cls, l, reader):
-        new_list = []
-
-        # this approach basically mimics what currently existed in 3.3.4 and prior versions where BulkSet is
-        # basically just coerced to list. the limitation here is that if the value of a bulk exceeds the size of
-        # a list (into the long space) then stuff won't work nice.
-        if len(l) > 0:
-            x = 0
-            while x < len(l):
-                obj = reader.toObject(l[x])
-                bulk = reader.toObject(l[x + 1])
-                for y in range(bulk):
-                    new_list.append(obj)
-                x = x + 2
-        return new_list
-
-
 class FloatIO(_NumberIO):
     python_type = FloatType
     graphson_type = "g:Float"
@@ -563,7 +531,7 @@ class VertexDeserializer(_GraphSONTypeIO):
 
     @classmethod
     def objectify(cls, d, reader):
-        return Vertex(reader.toObject(d["id"]), d.get("label", "vertex"))
+        return Vertex(reader.toObject(d["id"]), d.get("label", "vertex"), reader.toObject(d["properties"]))
 
 
 class EdgeDeserializer(_GraphSONTypeIO):
@@ -574,7 +542,8 @@ class EdgeDeserializer(_GraphSONTypeIO):
         return Edge(reader.toObject(d["id"]),
                     Vertex(reader.toObject(d["outV"]), d.get("outVLabel", "vertex")),
                     d.get("label", "edge"),
-                    Vertex(reader.toObject(d["inV"]), d.get("inVLabel", "vertex")))
+                    Vertex(reader.toObject(d["inV"]), d.get("inVLabel", "vertex")),
+                    reader.toObject(d["properties"]))
 
 
 class VertexPropertyDeserializer(_GraphSONTypeIO):
@@ -612,18 +581,3 @@ class TDeserializer(_GraphSONTypeIO):
     @classmethod
     def objectify(cls, d, reader):
         return T[d]
-
-class TraversalMetricsDeserializer(_GraphSONTypeIO):
-    graphson_type = "g:TraversalMetrics"
-
-    @classmethod
-    def objectify(cls, d, reader):
-        return reader.toObject(d)
-
-
-class MetricsDeserializer(_GraphSONTypeIO):
-    graphson_type = "g:Metrics"
-
-    @classmethod
-    def objectify(cls, d, reader):
-        return reader.toObject(d)
